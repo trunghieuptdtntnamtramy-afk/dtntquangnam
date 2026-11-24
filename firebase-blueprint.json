@@ -1,0 +1,167 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Private user account profile for students and teachers in EDU SMART.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "email": { "type": "string", "format": "email", "minLength": 3, "maxLength": 150 },
+        "role": { "type": "string", "enum": ["student", "teacher"] },
+        "className": { "type": "string", "minLength": 0, "maxLength": 50 },
+        "schoolName": { "type": "string", "minLength": 0, "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "email", "role", "className", "schoolName", "createdAt", "updatedAt"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Registry of verified teacher/admin accounts authorized for class-wide oversight.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "format": "email", "minLength": 3, "maxLength": 150 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "StudyPlan": {
+      "title": "StudyPlan",
+      "description": "Module 01 Study Plan task with target duration, status, and reflection.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "subject": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "title": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "goal": { "type": "string", "minLength": 2, "maxLength": 500 },
+        "targetMinutes": { "type": "integer" },
+        "scheduledDate": { "type": "string", "minLength": 8, "maxLength": 20 },
+        "status": { "type": "string", "enum": ["pending", "completed", "incomplete"] },
+        "reflectionReason": { "type": "string", "minLength": 0, "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "studentName", "subject", "title", "goal", "targetMinutes", "scheduledDate", "status", "reflectionReason", "createdAt", "updatedAt"]
+    },
+    "ThinkFirstEntry": {
+      "title": "ThinkFirstEntry",
+      "description": "Module 02 Think First independent reasoning draft before unlocking AI Coach.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "subject": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "promptTitle": { "type": "string", "minLength": 2, "maxLength": 200 },
+        "studentHypothesis": { "type": "string", "minLength": 20, "maxLength": 4000 },
+        "confidenceLevel": { "type": "integer" },
+        "unlockedAiCoach": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "studentName", "subject", "promptTitle", "studentHypothesis", "confidenceLevel", "unlockedAiCoach", "createdAt", "updatedAt"]
+    },
+    "AiCoachSession": {
+      "title": "AiCoachSession",
+      "description": "Module 03 AI Coach Socratic tutoring session tied to a Think First entry.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "thinkFirstId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "subject": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "topic": { "type": "string", "minLength": 2, "maxLength": 200 },
+        "messageCount": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "thinkFirstId", "subject", "topic", "messageCount", "createdAt", "updatedAt"]
+    },
+    "AiCoachMessage": {
+      "title": "AiCoachMessage",
+      "description": "Individual turn inside an AI Coach Socratic conversation.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "role": { "type": "string", "enum": ["user", "assistant"] },
+        "content": { "type": "string", "minLength": 1, "maxLength": 8000 },
+        "modelUsed": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "role", "content", "modelUsed", "createdAt"]
+    },
+    "FactCheckRecord": {
+      "title": "FactCheckRecord",
+      "description": "Module 04 Fact Check verification against textbook and trusted sources.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "subject": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "aiClaim": { "type": "string", "minLength": 5, "maxLength": 2000 },
+        "textbookSource": { "type": "string", "minLength": 2, "maxLength": 300 },
+        "verificationStatus": { "type": "string", "enum": ["accurate", "needs_context", "inaccurate"] },
+        "studentArgument": { "type": "string", "minLength": 10, "maxLength": 3000 },
+        "aiDeepReview": { "type": "string", "minLength": 0, "maxLength": 4000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "studentName", "subject", "aiClaim", "textbookSource", "verificationStatus", "studentArgument", "aiDeepReview", "createdAt", "updatedAt"]
+    },
+    "SelfTestAttempt": {
+      "title": "SelfTestAttempt",
+      "description": "Module 05 Self Test assessment completed without AI assistance.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "subject": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "topic": { "type": "string", "minLength": 2, "maxLength": 200 },
+        "questionPrompt": { "type": "string", "minLength": 5, "maxLength": 1000 },
+        "studentExplanation": { "type": "string", "minLength": 15, "maxLength": 4000 },
+        "applicationAnswer": { "type": "string", "minLength": 10, "maxLength": 4000 },
+        "score": { "type": "integer" },
+        "feedbackSummary": { "type": "string", "minLength": 0, "maxLength": 3000 },
+        "status": { "type": "string", "enum": ["draft", "submitted"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "studentName", "subject", "topic", "questionPrompt", "studentExplanation", "applicationAnswer", "score", "feedbackSummary", "status", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private user account profiles protected by owner/admin isolation."
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Verified teacher/admin privilege registry."
+    },
+    "/studyPlans/{planId}": {
+      "schema": { "$ref": "#/entities/StudyPlan" },
+      "description": "Module 01 study plan tasks owned by students."
+    },
+    "/thinkFirstEntries/{entryId}": {
+      "schema": { "$ref": "#/entities/ThinkFirstEntry" },
+      "description": "Module 02 independent thinking logs owned by students."
+    },
+    "/aiCoachSessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/AiCoachSession" },
+      "description": "Module 03 AI Coach Socratic session headers."
+    },
+    "/aiCoachSessions/{sessionId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/AiCoachMessage" },
+      "description": "Module 03 AI Coach conversation turns under parent session."
+    },
+    "/factChecks/{checkId}": {
+      "schema": { "$ref": "#/entities/FactCheckRecord" },
+      "description": "Module 04 Fact Check verification records owned by students."
+    },
+    "/selfTests/{testId}": {
+      "schema": { "$ref": "#/entities/SelfTestAttempt" },
+      "description": "Module 05 Self Test assessment records owned by students."
+    }
+  }
+}
