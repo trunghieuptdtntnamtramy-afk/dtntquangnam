@@ -1,36 +1,96 @@
+
 import React, { useState } from 'react';
-import { GraduationCap, Play, ShieldCheck, X } from 'lucide-react';
+import {
+  GraduationCap,
+  Play,
+  ShieldCheck,
+  X,
+  Mail,
+  Lock
+} from 'lucide-react';
 
 interface AuthModalProps {
   open: boolean;
   onClose: () => void;
-  onGoogleSignIn: () => Promise<void>;
+  onEmailPasswordSignIn: (
+    email: string,
+    password: string
+  ) => Promise<void>;
+  onForgotPassword: (email: string) => Promise<void>;
   onEnterDemo: () => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   open,
   onClose,
-  onGoogleSignIn,
+  onEmailPasswordSignIn,
+  onForgotPassword,
   onEnterDemo,
 }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   if (!open) return null;
 
-  const handleSignIn = async () => {
-    setErrorMsg(null);
+  const handleSignIn = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+
+    setErrorMsg('');
+    setSuccessMsg('');
     setLoading(true);
+
     try {
-      await onGoogleSignIn();
+      await onEmailPasswordSignIn(email.trim(), password);
       onClose();
-    } catch (err) {
+    } catch (error: any) {
+      const messages: Record<string, string> = {
+        'auth/invalid-credential':
+          'Gmail hoặc mật khẩu không chính xác.',
+        'auth/user-not-found':
+          'Tài khoản chưa được đăng ký.',
+        'auth/wrong-password':
+          'Mật khẩu không chính xác.',
+        'auth/too-many-requests':
+          'Bạn đã thử đăng nhập quá nhiều lần. Vui lòng thử lại sau.',
+        'auth/network-request-failed':
+          'Không thể kết nối mạng. Vui lòng kiểm tra Internet.',
+        'auth/invalid-email':
+          'Địa chỉ Gmail không hợp lệ.',
+      };
+
       setErrorMsg(
-        err instanceof Error
-          ? err.message
-          : 'Không thể đăng nhập bằng Google. Vui lòng thử lại.'
+        messages[error?.code] ||
+        error?.message ||
+        'Đăng nhập không thành công. Vui lòng thử lại.'
       );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    if (!email.trim()) {
+      setErrorMsg('Vui lòng nhập Gmail trước khi đặt lại mật khẩu.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await onForgotPassword(email.trim());
+      setSuccessMsg(
+        'Nếu Gmail hợp lệ, hướng dẫn đặt lại mật khẩu sẽ được gửi đến hộp thư của bạn.'
+      );
+    } catch {
+      setErrorMsg('Chưa thể gửi email đặt lại mật khẩu. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -38,12 +98,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
     >
       <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-7 shadow-xl relative">
+
         <button
           type="button"
           onClick={onClose}
@@ -53,12 +114,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-5">
           <div className="w-11 h-11 rounded-xl bg-sky-600 text-white flex items-center justify-center">
             <GraduationCap className="w-6 h-6" />
           </div>
+
           <div>
-            <h2 id="auth-modal-title" className="text-lg font-extrabold text-slate-900">
+            <h2
+              id="auth-modal-title"
+              className="text-lg font-extrabold text-slate-900"
+            >
               Đăng nhập EDU SMART
             </h2>
             <p className="text-xs text-slate-500">
@@ -67,68 +132,125 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         </div>
 
-        <p className="text-sm text-slate-600 leading-relaxed mb-6">
-          Sử dụng tài khoản Google của bạn để lưu tiến trình 05 phân hệ trên Firestore và đồng bộ với Google Drive, Sheets, Docs, Slides, Forms, Meet và Gmail.
+        <p className="text-sm text-slate-600 leading-relaxed mb-5">
+          Sử dụng Gmail và mật khẩu đã đăng ký để truy cập
+          không gian học tập EDU SMART.
         </p>
 
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700">
+          <div
+            role="alert"
+            className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-700"
+          >
             {errorMsg}
           </div>
         )}
 
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={handleSignIn}
-            disabled={loading}
-            className="gsi-material-button w-full"
+        {successMsg && (
+          <div
+            role="status"
+            className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-700"
           >
-            <span className="gsi-material-button-icon">
-              <svg
-                version="1.1"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 48 48"
-                style={{ display: 'block' }}
-              >
-                <path
-                  fill="#EA4335"
-                  d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
-                />
-                <path
-                  fill="#4285F4"
-                  d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-                />
-              </svg>
-            </span>
-            <span>{loading ? 'Đang kết nối Google...' : 'Sign in with Google'}</span>
-          </button>
+            {successMsg}
+          </div>
+        )}
+
+        <form onSubmit={handleSignIn} className="space-y-4">
+
+          <div>
+            <label
+              htmlFor="edu-email"
+              className="block text-sm font-semibold text-slate-700 mb-2"
+            >
+              Địa chỉ Gmail
+            </label>
+
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+
+              <input
+                id="edu-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@gmail.com"
+                autoComplete="username"
+                required
+                className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none text-sm"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="edu-password"
+              className="block text-sm font-semibold text-slate-700 mb-2"
+            >
+              Mật khẩu
+            </label>
+
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+
+              <input
+                id="edu-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Nhập mật khẩu"
+                autoComplete="current-password"
+                required
+                className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={loading}
+              className="text-sm text-sky-700 hover:text-sky-900 font-semibold"
+            >
+              Quên mật khẩu?
+            </button>
+          </div>
 
           <button
-            type="button"
-            onClick={() => {
-              onClose();
-              onEnterDemo();
-            }}
-            className="w-full py-2.5 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white text-sm font-bold transition-colors"
           >
-            <Play className="w-4 h-4 text-sky-600" />
-            <span>Trải nghiệm nhanh không gian tự học</span>
+            {loading ? 'Đang đăng nhập...' : 'ĐĂNG NHẬP'}
           </button>
+
+        </form>
+
+        <div className="my-4 flex items-center gap-3">
+          <div className="h-px bg-slate-200 flex-1" />
+          <span className="text-xs text-slate-400">HOẶC</span>
+          <div className="h-px bg-slate-200 flex-1" />
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            onClose();
+            onEnterDemo();
+          }}
+          className="w-full py-3 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors"
+        >
+          <Play className="w-4 h-4 text-sky-600" />
+          <span>Trải nghiệm nhanh không gian tự học</span>
+        </button>
 
         <div className="mt-5 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-500">
           <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Xác thực bảo mật qua Firebase Authentication & Google OAuth.</span>
+          <span>
+            Xác thực tài khoản qua Firebase Authentication.
+          </span>
         </div>
+
       </div>
     </div>
   );
